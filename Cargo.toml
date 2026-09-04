@@ -1,0 +1,20 @@
+[package]
+name = "rust-racer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { version = "0.19", default-features = false, features = ["2d"] }
+glam = "0.32"
+
+# Faster incremental compiles via Bevy as a shared library.
+# Skip for release: cargo build --release --no-default-features
+[features]
+default = ["bevy/dynamic_linking"]
+
+# Keep debug builds usable without giving up fast iterative compiles.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

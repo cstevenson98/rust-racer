@@ -1,0 +1,45 @@
+# Rust
+/target/
+**/*.rs.bk
+
+# Cursor / editors
+.cursor/
+.idea/
+.vscode/
+
+# Neovim / Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+*~
+[._]*.un~
+tags
+!tags/
+*.spl
+*.sug
+
+# Emacs
+\#*\#
+.#*
+*.elc
+auto-save-list
+tramp
+.emacs.desktop
+.emacs.desktop.lock
+
+# Nix / direnv
+.direnv/
+
+# Env / secrets (keep .envrc — it's just `use nix`)
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
