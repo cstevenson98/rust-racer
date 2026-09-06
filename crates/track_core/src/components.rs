@@ -7,7 +7,7 @@ use crate::Spline;
 pub struct ControlPoint;
 
 /// Parameter position of something moving along the track (`s` in segment space for now).
-#[derive(Component, Default, Clone, Copy)]
+#[derive(Component, Default, Copy, Clone)]
 pub struct TrackParam {
     pub s: f32,
 }

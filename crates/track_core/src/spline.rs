@@ -46,6 +46,7 @@ impl CubicSplineSegment {
             .map(|row| weighted_sum(row, control_points))
     }
 
+    // TODO (Jose-AI): Can this return type be generic e.g. Vec2 *and* Vec3 simulatenously?
     pub fn evaluate(&self, s: f32) -> glam::Vec2 {
         let s2 = s * s;
         let s3 = s2 * s;
@@ -117,6 +118,6 @@ impl Spline {
 
 pub fn weighted_sum(w: &glam::Vec4, pts: &[glam::Vec2; 4]) -> glam::Vec2 {
     pts.iter()
-        .zip(w.to_array())
+        .zip(w.as_ref())
         .fold(glam::Vec2::ZERO, |acc, (p, w)| acc + *p * w)
 }
