@@ -1,0 +1,8 @@
+[package]
+name = "debug_draw"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy = { workspace = true }
+track_core = { workspace = true }

@@ -2135,6 +2135,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4583a4551df46e2792f82ceeac45e850d2e2d5debba0b91f102385cda5b11f06"
 
 [[package]]
+name = "debug_draw"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "track_core",
+]
+
+[[package]]
 name = "derive_more"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2503,6 +2511,18 @@ dependencies = [
  "futures-task",
  "pin-project-lite",
  "slab",
+]
+
+[[package]]
+name = "game"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "debug_draw",
+ "player",
+ "track_core",
+ "track_editor",
+ "track_render",
 ]
 
 [[package]]
@@ -3835,6 +3855,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4596b6d070b27117e987119b4dac604f3c58cfb0b191112e24771b2faeac1a6"
 
 [[package]]
+name = "player"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "track_core",
+]
+
+[[package]]
 name = "png"
 version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4119,14 +4147,6 @@ dependencies = [
  "serde_derive",
  "typeid",
  "unicode-ident",
-]
-
-[[package]]
-name = "rust-racer"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "glam",
 ]
 
 [[package]]
@@ -4715,6 +4735,30 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "track_core"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "glam",
+]
+
+[[package]]
+name = "track_editor"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "track_core",
+]
+
+[[package]]
+name = "track_render"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "track_core",
 ]
 
 [[package]]

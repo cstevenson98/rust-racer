@@ -1,12 +1,11 @@
-mod points;
-mod spline;
-
 use bevy::prelude::*;
-use points::PointsPlugin;
+use debug_draw::DebugDrawPlugin;
+use player::PlayerPlugin;
+use track_core::TrackCorePlugin;
+use track_editor::TrackEditorPlugin;
+use track_render::TrackRenderPlugin;
 
 fn main() {
-    let _ = spline::Spline { segments: vec![] };
-
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -16,7 +15,13 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(PointsPlugin)
+        .add_plugins((
+            TrackCorePlugin,
+            TrackEditorPlugin,
+            TrackRenderPlugin,
+            DebugDrawPlugin,
+            PlayerPlugin,
+        ))
         .insert_resource(ClearColor(Color::srgb(0.12, 0.12, 0.16)))
         .add_systems(Startup, setup)
         .run();

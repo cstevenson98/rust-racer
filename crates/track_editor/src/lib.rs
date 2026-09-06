@@ -1,21 +1,23 @@
 use bevy::prelude::*;
+use track_core::{ActiveSpline, ControlPoint, Spline};
 
 const HIT_RADIUS: f32 = 14.0;
 const DOT_RADIUS: f32 = 4.0;
-const RING_RADIUS: f32 = 12.0;
-const CROSS_HALF: f32 = 10.0;
 
-pub struct PointsPlugin;
+pub struct TrackEditorPlugin;
 
-impl Plugin for PointsPlugin {
+impl Plugin for TrackEditorPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<DragState>()
-            .add_systems(Update, (handle_pointer, draw_point_overlays).chain());
+            .init_resource::<ControlPointOrder>()
+            .add_systems(Update, (handle_pointer, sync_spline_from_points).chain());
     }
 }
 
-#[derive(Component)]
-struct PlacedPoint;
+/// Spawn order of control points.
+/// Segments: [P0,P1,P2,P3], then [P3,P4,P5,P6], … (3 new points each).
+#[derive(Resource, Default)]
+struct ControlPointOrder(Vec<Entity>);
 
 #[derive(Resource, Default, Clone, Copy)]
 enum DragState {
@@ -26,6 +28,8 @@ enum DragState {
         /// World cursor minus point position at press (avoids snap-to-cursor).
         grab_offset: Vec2,
     },
+    /// Control points changed; rebuild the spline once.
+    NeedsSync,
 }
 
 enum PointerPhase {
@@ -52,7 +56,7 @@ fn pointer_phase(mouse: &ButtonInput<MouseButton>) -> PointerPhase {
     }
 }
 
-fn hit_test(points: &Query<(Entity, &mut Transform), With<PlacedPoint>>, cursor: Vec2) -> Hit {
+fn hit_test(points: &Query<(Entity, &mut Transform), With<ControlPoint>>, cursor: Vec2) -> Hit {
     points
         .iter()
         .filter_map(|(entity, tf)| {
@@ -78,8 +82,9 @@ fn handle_pointer(
     mouse: Res<ButtonInput<MouseButton>>,
     windows: Query<&Window>,
     camera: Query<(&Camera, &GlobalTransform), With<Camera2d>>,
-    mut points: Query<(Entity, &mut Transform), With<PlacedPoint>>,
+    mut points: Query<(Entity, &mut Transform), With<ControlPoint>>,
     mut drag: ResMut<DragState>,
+    mut order: ResMut<ControlPointOrder>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -103,12 +108,16 @@ fn handle_pointer(
                 };
             }
             Hit::Nothing => {
-                commands.spawn((
-                    PlacedPoint,
-                    Mesh2d(meshes.add(Circle::new(DOT_RADIUS))),
-                    MeshMaterial2d(materials.add(Color::BLACK)),
-                    Transform::from_translation(cursor.extend(1.0)),
-                ));
+                let entity = commands
+                    .spawn((
+                        ControlPoint,
+                        Mesh2d(meshes.add(Circle::new(DOT_RADIUS))),
+                        MeshMaterial2d(materials.add(Color::BLACK)),
+                        Transform::from_translation(cursor.extend(1.0)),
+                    ))
+                    .id();
+                order.0.push(entity);
+                *drag = DragState::NeedsSync;
             }
         },
         PointerPhase::Drag => {
@@ -124,16 +133,42 @@ fn handle_pointer(
                 }
             }
         }
-        PointerPhase::Release | PointerPhase::Idle => {
-            *drag = DragState::Idle;
+        PointerPhase::Release => {
+            *drag = match *drag {
+                DragState::Dragging { .. } => DragState::NeedsSync,
+                other => other,
+            };
         }
+        PointerPhase::Idle => {}
     }
 }
 
-fn draw_point_overlays(mut gizmos: Gizmos, points: Query<&Transform, With<PlacedPoint>>) {
-    for tf in &points {
-        let iso = Isometry2d::from_translation(tf.translation.truncate());
-        gizmos.circle_2d(iso, RING_RADIUS, Color::BLACK);
-        gizmos.cross_2d(iso, CROSS_HALF, Color::BLACK);
+fn sync_spline_from_points(
+    mut drag: ResMut<DragState>,
+    order: Res<ControlPointOrder>,
+    points: Query<&Transform, With<ControlPoint>>,
+    mut spline: ResMut<ActiveSpline>,
+) {
+    let should_sync = matches!(*drag, DragState::Dragging { .. } | DragState::NeedsSync);
+    if !should_sync {
+        return;
+    }
+
+    let mut positions = Vec::with_capacity(order.0.len());
+    for entity in &order.0 {
+        let Ok(tf) = points.get(*entity) else {
+            spline.0 = Spline::default();
+            if matches!(*drag, DragState::NeedsSync) {
+                *drag = DragState::Idle;
+            }
+            return;
+        };
+        positions.push(tf.translation.truncate());
+    }
+
+    spline.0 = Spline::from_bezier_points(&positions);
+
+    if matches!(*drag, DragState::NeedsSync) {
+        *drag = DragState::Idle;
     }
 }

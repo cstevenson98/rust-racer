@@ -1,16 +1,27 @@
-[package]
-name = "rust-racer"
+[workspace]
+resolver = "2"
+members = [
+    "crates/track_core",
+    "crates/track_editor",
+    "crates/track_render",
+    "crates/debug_draw",
+    "crates/player",
+    "crates/game",
+]
+default-members = ["crates/game"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
+[workspace.dependencies]
 bevy = { version = "0.19", default-features = false, features = ["2d"] }
 glam = "0.32"
-
-# Faster incremental compiles via Bevy as a shared library.
-# Skip for release: cargo build --release --no-default-features
-[features]
-default = ["bevy/dynamic_linking"]
+track_core = { path = "crates/track_core" }
+track_editor = { path = "crates/track_editor" }
+track_render = { path = "crates/track_render" }
+debug_draw = { path = "crates/debug_draw" }
+player = { path = "crates/player" }
 
 # Keep debug builds usable without giving up fast iterative compiles.
 [profile.dev]

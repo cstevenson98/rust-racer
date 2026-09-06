@@ -1,0 +1,8 @@
+[package]
+name = "track_core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+bevy = { workspace = true }
+glam = { workspace = true }

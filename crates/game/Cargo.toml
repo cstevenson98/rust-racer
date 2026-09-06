@@ -1,0 +1,19 @@
+[package]
+name = "game"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "rust-racer"
+path = "src/main.rs"
+
+[dependencies]
+bevy = { workspace = true }
+debug_draw = { workspace = true }
+player = { workspace = true }
+track_core = { workspace = true }
+track_editor = { workspace = true }
+track_render = { workspace = true }
+
+[features]
+default = ["bevy/dynamic_linking"]
