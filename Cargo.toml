@@ -6,6 +6,7 @@ members = [
     "crates/track_render",
     "crates/debug_draw",
     "crates/player",
+    "crates/mechanical_system",
     "crates/game",
 ]
 default-members = ["crates/game"]
@@ -17,11 +18,14 @@ edition = "2024"
 [workspace.dependencies]
 bevy = { version = "0.19", default-features = false, features = ["2d"] }
 glam = "0.32"
+nalgebra = "0.33"
+rand = "0.9"
 track_core = { path = "crates/track_core" }
 track_editor = { path = "crates/track_editor" }
 track_render = { path = "crates/track_render" }
 debug_draw = { path = "crates/debug_draw" }
 player = { path = "crates/player" }
+mechanical_system = { path = "crates/mechanical_system" }
 
 # Keep debug builds usable without giving up fast iterative compiles.
 [profile.dev]

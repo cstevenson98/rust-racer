@@ -5,4 +5,5 @@ edition.workspace = true
 
 [dependencies]
 bevy = { workspace = true }
+mechanical_system = { workspace = true }
 track_core = { workspace = true }

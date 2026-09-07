@@ -1,9 +1,9 @@
 [package]
-name = "track_core"
+name = "mechanical_system"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-bevy = { workspace = true }
 glam = { workspace = true }
-mechanical_system = { workspace = true }
+nalgebra = { workspace = true }
+rand = { workspace = true }

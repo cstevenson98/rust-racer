@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use mechanical_system::{FreeParticle, InverseRPotential, LagrangianModel, LagrangianSystem};
 
 use crate::Spline;
 
@@ -12,6 +13,15 @@ pub struct TrackParam {
     pub s: f32,
 }
 
+/// ECS handle for a concrete Lagrangian system (`M` picks which array/query).
+#[derive(Component)]
+pub struct LagrangianBody<M>(pub LagrangianSystem<M>)
+where
+    M: LagrangianModel + Send + Sync + 'static;
+
 /// Cached multi-segment spline rebuilt from control-point transforms.
 #[derive(Resource, Default)]
 pub struct ActiveSpline(pub Spline);
+
+pub type FreeParticleBody = LagrangianBody<FreeParticle>;
+pub type InverseRBody = LagrangianBody<InverseRPotential>;
