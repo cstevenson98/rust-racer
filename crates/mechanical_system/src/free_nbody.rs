@@ -16,6 +16,10 @@ impl<const N: usize> CoordSpace for FreeNBodyCoords<N> {
     fn integrate(q: Self, qdot: Self, dt: f32) -> Self {
         q + qdot * dt
     }
+
+    fn dot(a: Self, b: Self) -> f32 {
+        a.dot(&b)
+    }
 }
 
 impl<const N: usize> UnitBoxBound for FreeNBodyCoords<N> {

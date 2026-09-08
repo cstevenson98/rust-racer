@@ -1,5 +1,7 @@
 use bevy::prelude::*;
-use mechanical_system::{FreeParticle, InverseRPotential, LagrangianModel, LagrangianSystem};
+use mechanical_system::{
+    FreeParticle, InverseRPotential, KnifeEdge, LagrangianModel, LagrangianSystem,
+};
 
 use crate::Spline;
 
@@ -25,3 +27,4 @@ pub struct ActiveSpline(pub Spline);
 
 pub type FreeParticleBody = LagrangianBody<FreeParticle>;
 pub type InverseRBody = LagrangianBody<InverseRPotential>;
+pub type KnifeEdgeBody = LagrangianBody<KnifeEdge>;

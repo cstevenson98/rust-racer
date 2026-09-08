@@ -1,17 +1,26 @@
 mod free_nbody;
+mod knife_edge;
 
 pub use free_nbody::{
     FreeNBody, FreeNBody15, FreeNBody15System, FreeNBodyCoords, FREE_NBODY_N,
 };
+pub use knife_edge::KnifeEdge;
 
 /// Configuration coordinates for Euler integration: `q' = q + q̇·dt`.
 pub trait CoordSpace: Copy + Send + Sync + 'static {
     fn integrate(q: Self, qdot: Self, dt: f32) -> Self;
+
+    /// Euclidean inner product, used to project onto velocity constraints.
+    fn dot(a: Self, b: Self) -> f32;
 }
 
 impl CoordSpace for f32 {
     fn integrate(q: Self, qdot: Self, dt: f32) -> Self {
         q + qdot * dt
+    }
+
+    fn dot(a: Self, b: Self) -> f32 {
+        a * b
     }
 }
 
@@ -19,11 +28,19 @@ impl CoordSpace for glam::Vec2 {
     fn integrate(q: Self, qdot: Self, dt: f32) -> Self {
         q + qdot * dt
     }
+
+    fn dot(a: Self, b: Self) -> f32 {
+        a.dot(b)
+    }
 }
 
 impl CoordSpace for glam::Vec3 {
     fn integrate(q: Self, qdot: Self, dt: f32) -> Self {
         q + qdot * dt
+    }
+
+    fn dot(a: Self, b: Self) -> f32 {
+        a.dot(b)
     }
 }
 
@@ -97,6 +114,15 @@ pub trait LagrangianModel {
 
     /// Legendre map: \(p = \partial L / \partial \dot q\).
     fn momentum(&mut self, q: Self::Coords, qdot: Self::Coords) -> Self::Coords;
+
+    /// Non-holonomic constraint row `a(q)`, asserting `a(q) · q̇ = 0`.
+    ///
+    /// Written in whatever generalised coordinates the model uses; the
+    /// integrator only needs the row, not its meaning. `None` means the model
+    /// is unconstrained.
+    fn constraint_row(&mut self, _q: Self::Coords) -> Option<Self::Coords> {
+        None
+    }
 }
 
 pub trait HamiltonianModel {
@@ -203,8 +229,21 @@ where
         let q = self.state.q;
         let qdot = self.state.qdot;
         let qddot = self.model.accel(q, qdot);
-        self.state.q = M::Coords::integrate(q, qdot, dt);
-        self.state.qdot = M::Coords::integrate(qdot, qddot, dt);
+
+        let q_next = M::Coords::integrate(q, qdot, dt);
+        let mut qdot_next = M::Coords::integrate(qdot, qddot, dt);
+
+        // Non-holonomic constraint: remove the velocity component along a(q).
+        if let Some(a) = self.model.constraint_row(q_next) {
+            let aa = M::Coords::dot(a, a);
+            if aa > 1e-12 {
+                let excess = M::Coords::dot(a, qdot_next) / aa;
+                qdot_next = M::Coords::integrate(qdot_next, a, -excess);
+            }
+        }
+
+        self.state.q = q_next;
+        self.state.qdot = qdot_next;
 
         if self.constraint == DomainConstraint::UnitBox {
             M::Coords::enforce_unit_box(&mut self.state.q, &mut self.state.qdot);
